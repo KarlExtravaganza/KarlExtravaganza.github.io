@@ -13,9 +13,11 @@ img
 }
 
 body
-{}
+{
+	background-color: #333
+}
 
-h1, .h1span
+h1, .h1span, .winterh1span
 {
 	font-size: 2rem;
 	text-align: center;
@@ -24,6 +26,15 @@ h1, .h1span
 .h1span
 {
 	background: -webkit-linear-gradient(180deg,#7cc9bf, #f4006f);
+
+  	-webkit-background-clip: text;
+  	-webkit-text-fill-color: transparent;
+	margin: 0;
+}
+.winterh1span
+{
+	font-size: 3rem;
+	background: -webkit-linear-gradient(180deg, #ffffff, #3cc9bf);
 
   	-webkit-background-clip: text;
   	-webkit-text-fill-color: transparent;
