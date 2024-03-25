@@ -1,8 +1,11 @@
 var gCanvas = document.getElementById("gameCanvas");
 var ctx = gCanvas.getContext("2d");
-ctx.font = "50px Helvetica";
+var defaultFont = "50px Helvetica";
+var detailFont = "12px Helvetica";
+ctx.font = defaultFont;
 ctx.fillStyle = "red";
-ctx.fillText("Click to start!", gCanvas.width - 342, gCanvas.height - 50);
+ctx.textAlign = "center";
+ctx.fillText("Click to start!", gCanvas.width/2, gCanvas.height - 50);
 
 
 var playerAvatar = new Image;
@@ -17,11 +20,11 @@ var obstacleAvatarScaleFactor = 0.075;
 obstacleAvatar.width = obstacleAvatar.width * obstacleAvatarScaleFactor;
 obstacleAvatar.height = obstacleAvatar.height * obstacleAvatarScaleFactor;
 
-var playerPos = {x: gCanvas.width/2,y: gCanvas.height}
-const RACING_LANES_COUNT = 3;
-const RACING_ROWS_COUNT = 5;
-var playerLane = 0;
-var racingLanePos = {l: (gCanvas.width/RACING_LANES_COUNT)*0, c: (gCanvas.width/RACING_LANES_COUNT)*1, r: (gCanvas.width/RACING_LANES_COUNT)*2}
+var winAvatar = new Image;
+winAvatar.src = "./img/trophy.png"
+var winAvatarScaleFactor = 0.5;
+winAvatar.width = winAvatar.width * winAvatarScaleFactor;
+winAvatar.height = winAvatar.height * winAvatarScaleFactor;
 
 
 function getMousePos(canvas, evt) {
@@ -33,22 +36,98 @@ function getMousePos(canvas, evt) {
 }
 gCanvas.addEventListener("mousemove", function (evt) {
     playerPos = getMousePos(gCanvas, evt);
-
-    //DEBUG
-    document.getElementById("mouseInfo").textContent=playerPos.y + "," + playerPos.x;
-    document.getElementById("laneInfo").textContent=playerLane+": "+getLane(playerPos.x);
 }, false);
+gCanvas.addEventListener("click", function(evt){
+    reset();
+},false)
 
 
-const FPS = 20;
+const FPS = 60;
 const MAX_LEVEL = 8;
-var level = 1;
+const RACING_LANES_COUNT = 3;
+const RACING_ROWS_COUNT = 5;
+
 var drawFrameInterval = null;
 var setObstaclesInterval = null;
-gCanvas.addEventListener("click", function(evt){
+
+var obstaclesGrid = null;
+var level = null;
+var playerPos = null;
+var playerLane = null;
+var racingLanePos = null;
+var newObstaclesCounter = null;
+var gameLost = null;
+var gameWon = null;
+
+function reset(){
+    clearInterval(drawFrameInterval);
+    clearInterval(setObstaclesInterval);
+    ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+    
+    level = 1;
+    
+    obstaclesGrid = Array.from({length: RACING_ROWS_COUNT}, e => Array(RACING_LANES_COUNT).fill(false));
+    playerPos = {x: gCanvas.width/2,y: gCanvas.height}
+    playerLane = 0;
+    racingLanePos = {l: (gCanvas.width/RACING_LANES_COUNT)*0, c: (gCanvas.width/RACING_LANES_COUNT)*1, r: (gCanvas.width/RACING_LANES_COUNT)*2}
+
+    newObstaclesCounter = -5;
+    gameLost = false;
+    gameWon = false;
+
     drawFrameInterval=setInterval(draw,1000/FPS);
     setObstaclesInterval=setInterval(setObstacles,1000/level);
-},false)
+}
+function draw(){
+    //DEBUG
+    document.getElementById("debugInfo").textContent=newObstaclesCounter + "/" +3*5*level;
+    document.getElementById("mouseInfo").textContent=level;
+    
+    ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+    ctx.strokeStyle = "rgb(100 0 0)";
+    ctx.strokeText(level, gCanvas.width/2, gCanvas.height/2);
+
+    drawPlayer();
+    drawObstacles();
+    checkWinState();
+}
+function drawPlayer(){
+    ctx.drawImage(playerAvatar, setPlayerLane(playerPos.x), gCanvas.height - playerAvatar.height, playerAvatar.width, playerAvatar.height);
+}
+function drawObstacles(){
+    for (let row = 0; row < RACING_ROWS_COUNT; row++) {
+        if(obstaclesGrid[row][0] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
+        if(obstaclesGrid[row][1] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*2-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
+        if(obstaclesGrid[row][2] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*3)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
+    } 
+}
+function checkWinState(){
+    gameLost = (obstaclesGrid[RACING_ROWS_COUNT-1][playerLane] == true) ? true : false;
+    gameWon = level == MAX_LEVEL;
+
+    if(gameLost){
+        clearInterval(drawFrameInterval);
+        clearInterval(setObstaclesInterval);
+        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height/2);
+
+        ctx.fillText("You crashed :(", gCanvas.width/2, gCanvas.height/2);
+    } else if (gameWon)
+    {
+        clearInterval(drawFrameInterval);
+        clearInterval(setObstaclesInterval);
+        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height/2);
+
+
+        ctx.drawImage(winAvatar, gCanvas.width/2-winAvatar.width/2+5, 10, winAvatar.width, winAvatar.height);
+        ctx.fillStyle = "green";
+        gCanvas.style.border = "1px solid #00FF00";
+        ctx.fillText("Congratulations!", gCanvas.width/2, gCanvas.height/2);
+        ctx.font = detailFont;
+        ctx.fillText("(envoyez moi une photo de votre écran comme preuve de votre victoire)", gCanvas.width/2, 2*gCanvas.height/3);
+        ctx.font = defaultFont;
+    }
+}
+
 
 
 
@@ -57,13 +136,13 @@ function setPlayerLane(xPos){
     var lanePos=getLane(xPos);
     switch(lanePos){
         case racingLanePos.l:
-            playerLane = -1;
-            break;
-        case racingLanePos.c:
             playerLane = 0;
             break;
-        default:
+        case racingLanePos.c:
             playerLane = 1;
+            break;
+        default:
+            playerLane = 2;
     }
     return lanePos;
 }
@@ -73,29 +152,26 @@ function getLane(xPos){
     else{return racingLanePos.r;}
 }
 
-
-
-function draw(){
-    var ctx = gCanvas.getContext("2d");
-    ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
-    ctx.drawImage(playerAvatar, setPlayerLane(playerPos.x), gCanvas.height - playerAvatar.height, playerAvatar.width, playerAvatar.height);
-    drawObstacles();
-}
-function drawObstacles(){
-    var ctx = gCanvas.getContext("2d");
-
-    for (let row = 0; row < RACING_ROWS_COUNT; row++) {
-        if(obstaclesGrid[row][0] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
-        if(obstaclesGrid[row][1] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*2-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
-        if(obstaclesGrid[row][2] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*3)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
-      } 
-}
-
-
-
-var obstaclesGrid = Array.from({length: RACING_ROWS_COUNT}, e => Array(RACING_LANES_COUNT).fill(false));
-var isNewObstaclesCounter = 0;
 function getRndPattern(min, max) {
+    return Math.floor(Math.random() * (max - min) ) + min;
+}
+function setObstacles(){
+    
+    //Rotate rows
+    for(let row = RACING_ROWS_COUNT; row > 1; row--){
+        obstaclesGrid[row-1] = obstaclesGrid[row-2].slice();
+    }
+
+    var newPattern = 0;
+    if(newObstaclesCounter%3 == 0){
+        if(level < MAX_LEVEL/2){
+            newPattern = getRndPattern(1,7);
+        } else {
+            newPattern = getRndPattern(4,7);
+        }
+    }
+
+
     /*
     001: 1
     010: 2
@@ -105,24 +181,6 @@ function getRndPattern(min, max) {
     101: 5
     110: 6
     */
-    return Math.floor(Math.random() * (max - min) ) + min;
-  }
-function setObstacles(){
-    
-    for(let row = RACING_ROWS_COUNT; row > 1; row--){
-        obstaclesGrid[row-1] = obstaclesGrid[row-2].slice();
-    }
-
-    var newPattern = 0;
-    if(isNewObstaclesCounter == 0){
-        if(level < MAX_LEVEL/2){
-            newPattern = getRndPattern(1,7);
-        } else {
-            newPattern = getRndPattern(4,7);
-        }
-    }
-
-
     switch (newPattern){
         case 1:
             obstaclesGrid[0][0] = false;
@@ -161,14 +219,13 @@ function setObstacles(){
             obstaclesGrid[0][2] = false;
     }
 
-    isNewObstaclesCounter = isNewObstaclesCounter+1;
-    if(isNewObstaclesCounter == 3){isNewObstaclesCounter = 0;}
+    newObstaclesCounter = newObstaclesCounter+1;
+    if(newObstaclesCounter >= 3*5*level){
+        newObstaclesCounter = 0;
+        level = level + 1;
+
+        clearInterval(setObstaclesInterval);
+        setObstaclesInterval=setInterval(setObstacles,1000/level);
+    }
 }
 
-
-
-
-
-//DEBUG
-document.getElementById("debugInfo").textContent=gCanvas.height+" x "+gCanvas.width;
-//...
