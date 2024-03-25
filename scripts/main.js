@@ -18,11 +18,10 @@ obstacleAvatar.width = obstacleAvatar.width * obstacleAvatarScaleFactor;
 obstacleAvatar.height = obstacleAvatar.height * obstacleAvatarScaleFactor;
 
 var playerPos = {x: gCanvas.width/2,y: gCanvas.height}
-let RACING_LANES_COUNT = 3;
-let RACING_ROWS_COUNT = 5;
+const RACING_LANES_COUNT = 3;
+const RACING_ROWS_COUNT = 5;
 var playerLane = 0;
 var racingLanePos = {l: (gCanvas.width/RACING_LANES_COUNT)*0, c: (gCanvas.width/RACING_LANES_COUNT)*1, r: (gCanvas.width/RACING_LANES_COUNT)*2}
-console.log(racingLanePos);
 
 
 function getMousePos(canvas, evt) {
@@ -41,11 +40,14 @@ gCanvas.addEventListener("mousemove", function (evt) {
 }, false);
 
 
+const FPS = 20;
+const MAX_LEVEL = 8;
+var level = 1;
 var drawFrameInterval = null;
 var setObstaclesInterval = null;
 gCanvas.addEventListener("click", function(evt){
     drawFrameInterval=setInterval(draw,1000/FPS);
-    setObstaclesInterval=setInterval(setObstacles,1000);
+    setObstaclesInterval=setInterval(setObstacles,1000/level);
 },false)
 
 
@@ -73,10 +75,6 @@ function getLane(xPos){
 
 
 
-
-
-
-const FPS = 20;
 function draw(){
     var ctx = gCanvas.getContext("2d");
     ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
@@ -93,21 +91,74 @@ function drawObstacles(){
       } 
 }
 
+
+
 var obstaclesGrid = Array.from({length: RACING_ROWS_COUNT}, e => Array(RACING_LANES_COUNT).fill(false));
 var isNewObstaclesCounter = 0;
+function getRndPattern(min, max) {
+    /*
+    001: 1
+    010: 2
+    100: 4 <-> 3
+
+    011: 3 <-> 4
+    101: 5
+    110: 6
+    */
+    return Math.floor(Math.random() * (max - min) ) + min;
+  }
 function setObstacles(){
     
     for(let row = RACING_ROWS_COUNT; row > 1; row--){
         obstaclesGrid[row-1] = obstaclesGrid[row-2].slice();
     }
 
+    var newPattern = 0;
     if(isNewObstaclesCounter == 0){
-        obstaclesGrid[0][0] = true;
-        obstaclesGrid[0][2] = true;
-    } else {
-        obstaclesGrid[0][0] = false;
-        obstaclesGrid[0][1] = false;
-        obstaclesGrid[0][2] = false;
+        if(level < MAX_LEVEL/2){
+            newPattern = getRndPattern(1,7);
+        } else {
+            newPattern = getRndPattern(4,7);
+        }
+    }
+
+
+    switch (newPattern){
+        case 1:
+            obstaclesGrid[0][0] = false;
+            obstaclesGrid[0][1] = false;
+            obstaclesGrid[0][2] = true;
+            break;
+        case 2:
+            obstaclesGrid[0][0] = false;
+            obstaclesGrid[0][1] = true;
+            obstaclesGrid[0][2] = false;
+            break;
+        case 3: //SWITCHED 4
+            obstaclesGrid[0][0] = true;
+            obstaclesGrid[0][1] = false;
+            obstaclesGrid[0][2] = false;
+            break;
+
+        case 4: //SWITCHED 3
+            obstaclesGrid[0][0] = false;
+            obstaclesGrid[0][1] = true;
+            obstaclesGrid[0][2] = true;
+            break;
+        case 5:
+            obstaclesGrid[0][0] = true;
+            obstaclesGrid[0][1] = false;
+            obstaclesGrid[0][2] = true;
+            break;
+        case 6:
+            obstaclesGrid[0][0] = true;
+            obstaclesGrid[0][1] = true;
+            obstaclesGrid[0][2] = false;
+            break;
+        default:
+            obstaclesGrid[0][0] = false;
+            obstaclesGrid[0][1] = false;
+            obstaclesGrid[0][2] = false;
     }
 
     isNewObstaclesCounter = isNewObstaclesCounter+1;
