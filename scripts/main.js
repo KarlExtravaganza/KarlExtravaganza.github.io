@@ -43,9 +43,10 @@ gCanvas.addEventListener("click", function(evt){
 
 
 const FPS = 60;
-const MAX_LEVEL = 8;
+const MAX_LEVEL = 9;
 const RACING_LANES_COUNT = 3;
 const RACING_ROWS_COUNT = 5;
+const TO_NEXT_LEVEL_INDICATOR_COUNT = 12;
 
 var drawFrameInterval = null;
 var setObstaclesInterval = null;
@@ -63,6 +64,7 @@ function reset(){
     clearInterval(drawFrameInterval);
     clearInterval(setObstaclesInterval);
     ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+    gCanvas.style.border = "1px solid #FF0000";
     
     level = 1;
     
@@ -71,7 +73,7 @@ function reset(){
     playerLane = 0;
     racingLanePos = {l: (gCanvas.width/RACING_LANES_COUNT)*0, c: (gCanvas.width/RACING_LANES_COUNT)*1, r: (gCanvas.width/RACING_LANES_COUNT)*2}
 
-    newObstaclesCounter = -5;
+    newObstaclesCounter = 0;
     gameLost = false;
     gameWon = false;
 
@@ -80,12 +82,14 @@ function reset(){
 }
 function draw(){
     //DEBUG
-    document.getElementById("debugInfo").textContent=newObstaclesCounter + "/" +3*5*level;
+    document.getElementById("debugInfo").textContent=newObstaclesCounter + "/" +3*RACING_ROWS_COUNT*level;
     document.getElementById("mouseInfo").textContent=level;
     
     ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
-    ctx.strokeStyle = "rgb(100 0 0)";
-    ctx.strokeText(level, gCanvas.width/2, gCanvas.height/2);
+    ctx.strokeStyle = "rgb(50 0 0)";
+    var toNextLevel = 3*RACING_ROWS_COUNT*level;
+    var levelIndicator = "-".repeat(newObstaclesCounter*TO_NEXT_LEVEL_INDICATOR_COUNT/toNextLevel);
+    ctx.strokeText(levelIndicator+level+levelIndicator, gCanvas.width/2, gCanvas.height/2);
 
     drawPlayer();
     drawObstacles();
@@ -164,7 +168,7 @@ function setObstacles(){
 
     var newPattern = 0;
     if(newObstaclesCounter%3 == 0){
-        if(level < MAX_LEVEL/2){
+        if(level <= MAX_LEVEL/2-1 || level == MAX_LEVEL-1){
             newPattern = getRndPattern(1,7);
         } else {
             newPattern = getRndPattern(4,7);
@@ -220,7 +224,7 @@ function setObstacles(){
     }
 
     newObstaclesCounter = newObstaclesCounter+1;
-    if(newObstaclesCounter >= 3*5*level){
+    if(newObstaclesCounter >= 3*RACING_ROWS_COUNT*level){
         newObstaclesCounter = 0;
         level = level + 1;
 
