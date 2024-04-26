@@ -9,7 +9,7 @@
 
 body
 {
-	background-color: #333
+	background-color: #222;
 }
 
 canvas {
@@ -20,6 +20,12 @@ canvas {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
 
-	border:1px solid #FF0000;
+#badge{
+	margin: 2%;
+	display: block;
+	position: fixed;
+	width: 25vw;
+	height: 25vw;
 }
