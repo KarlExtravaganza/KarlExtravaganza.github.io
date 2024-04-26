@@ -11,7 +11,6 @@ var winAvatar = new Image;
 winAvatar.src = "./img/trophy.png"
 
 
-
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -27,9 +26,9 @@ gCanvas.addEventListener("click", function(evt){
 },false)
 window.addEventListener("resize",init);
 
+
 const FPS = 60;
-//const MAX_LEVEL = 9;
-const MAX_LEVEL = 3;
+const MAX_LEVEL = 9;
 const RACING_LANES_COUNT = 3;
 const RACING_ROWS_COUNT = 5;
 const TO_NEXT_LEVEL_INDICATOR_COUNT = ctx.canvas.width/20;
@@ -95,11 +94,8 @@ function reset(){
     drawFrameInterval=setInterval(draw,1000/FPS);
     setObstaclesInterval=setInterval(setObstacles,1000/level);
 }
+
 function draw(){
-    //DEBUG
-    document.getElementById("debugInfo").textContent=newObstaclesCounter + "/" +3*RACING_ROWS_COUNT*level;
-    document.getElementById("mouseInfo").textContent=level;
-    
     ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
     ctx.strokeStyle = "rgb(50 0 0)";
     var toNextLevel = 3*RACING_ROWS_COUNT*level;
@@ -115,9 +111,9 @@ function drawPlayer(){
 }
 function drawObstacles(){
     for (let row = 0; row < RACING_ROWS_COUNT; row++) {
-        if(obstaclesGrid[row][0] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
-        if(obstaclesGrid[row][1] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*2-1)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
-        if(obstaclesGrid[row][2] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*3)+obstacleAvatar.width/4, gCanvas.height - playerAvatar.height*(RACING_ROWS_COUNT-row), obstacleAvatar.width, obstacleAvatar.height)};
+        if(obstaclesGrid[row][0] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT-1)+obstacleAvatar.width/4, (gCanvas.height - playerAvatar.height)/(RACING_ROWS_COUNT-1)*(row), obstacleAvatar.width, obstacleAvatar.height)};
+        if(obstaclesGrid[row][1] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*2-1)+obstacleAvatar.width/4, (gCanvas.height - playerAvatar.height)/(RACING_ROWS_COUNT-1)*(row), obstacleAvatar.width, obstacleAvatar.height)};
+        if(obstaclesGrid[row][2] == true){ctx.drawImage(obstacleAvatar, getLane(gCanvas.width/RACING_LANES_COUNT*3)+obstacleAvatar.width/4, (gCanvas.height - playerAvatar.height)/(RACING_ROWS_COUNT-1)*(row), obstacleAvatar.width, obstacleAvatar.height)};
     } 
 }
 function checkWinState(){
