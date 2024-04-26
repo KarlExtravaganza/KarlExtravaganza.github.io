@@ -1,30 +1,15 @@
 var gCanvas = document.getElementById("gameCanvas");
 var ctx = gCanvas.getContext("2d");
-var defaultFont = "50px Helvetica";
-var detailFont = "12px Helvetica";
-ctx.font = defaultFont;
-ctx.fillStyle = "red";
-ctx.textAlign = "center";
-ctx.fillText("Click to start!", gCanvas.width/2, gCanvas.height - 50);
-
+var defaultFont = "3vw Helvetica";
+var detailFont = "1vw Helvetica";
 
 var playerAvatar = new Image;
 playerAvatar.src = "./img/kart.png";
-var playerAvatarScaleFactor = 0.1;
-playerAvatar.width = playerAvatar.width * playerAvatarScaleFactor;
-playerAvatar.height = playerAvatar.height * playerAvatarScaleFactor;
-
 var obstacleAvatar = new Image;
 obstacleAvatar.src = "./img/shell.png"
-var obstacleAvatarScaleFactor = 0.075;
-obstacleAvatar.width = obstacleAvatar.width * obstacleAvatarScaleFactor;
-obstacleAvatar.height = obstacleAvatar.height * obstacleAvatarScaleFactor;
-
 var winAvatar = new Image;
 winAvatar.src = "./img/trophy.png"
-var winAvatarScaleFactor = 0.5;
-winAvatar.width = winAvatar.width * winAvatarScaleFactor;
-winAvatar.height = winAvatar.height * winAvatarScaleFactor;
+
 
 
 function getMousePos(canvas, evt) {
@@ -40,13 +25,14 @@ gCanvas.addEventListener("mousemove", function (evt) {
 gCanvas.addEventListener("click", function(evt){
     reset();
 },false)
-
+window.addEventListener("resize",init);
 
 const FPS = 60;
-const MAX_LEVEL = 9;
+//const MAX_LEVEL = 9;
+const MAX_LEVEL = 3;
 const RACING_LANES_COUNT = 3;
 const RACING_ROWS_COUNT = 5;
-const TO_NEXT_LEVEL_INDICATOR_COUNT = 12;
+const TO_NEXT_LEVEL_INDICATOR_COUNT = ctx.canvas.width/20;
 
 var drawFrameInterval = null;
 var setObstaclesInterval = null;
@@ -60,10 +46,39 @@ var newObstaclesCounter = null;
 var gameLost = null;
 var gameWon = null;
 
+
+function sizeCanvas(){
+    ctx.canvas.height = window.innerHeight*0.90;
+    ctx.canvas.width  = window.innerWidth*0.30;
+
+    winAvatar.width = ctx.canvas.width*0.5;
+    winAvatar.height = winAvatar.width;
+
+    obstacleAvatar.width = ctx.canvas.width*0.22;
+    obstacleAvatar.height = ctx.canvas.width*0.18;
+
+    playerAvatar.width = ctx.canvas.width*0.33;
+    playerAvatar.height = playerAvatar.width;
+}
+
+function init(){
+    clearInterval(drawFrameInterval);
+    clearInterval(setObstaclesInterval);
+
+    sizeCanvas();
+
+    ctx.font = defaultFont;
+    gCanvas.style.border = "1px solid #FF0000";
+    ctx.fillStyle = "red";
+    ctx.textAlign = "center";
+    ctx.fillText("Click to (re)start!", gCanvas.width/2, gCanvas.height - 50);
+}
 function reset(){
     clearInterval(drawFrameInterval);
     clearInterval(setObstaclesInterval);
     ctx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+    
+    ctx.fillStyle = "red";
     gCanvas.style.border = "1px solid #FF0000";
     
     level = 1;
@@ -112,14 +127,14 @@ function checkWinState(){
     if(gameLost){
         clearInterval(drawFrameInterval);
         clearInterval(setObstaclesInterval);
-        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height/2);
+        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height/3);
 
-        ctx.fillText("You crashed :(", gCanvas.width/2, gCanvas.height/2);
+        ctx.fillText("You crashed :(", gCanvas.width/2, gCanvas.height/3);
     } else if (gameWon)
     {
         clearInterval(drawFrameInterval);
         clearInterval(setObstaclesInterval);
-        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height/2);
+        ctx.clearRect(0, 0, gCanvas.width, gCanvas.height - playerAvatar.height);
 
 
         ctx.drawImage(winAvatar, gCanvas.width/2-winAvatar.width/2+5, 10, winAvatar.width, winAvatar.height);
@@ -127,7 +142,8 @@ function checkWinState(){
         gCanvas.style.border = "1px solid #00FF00";
         ctx.fillText("Congratulations!", gCanvas.width/2, gCanvas.height/2);
         ctx.font = detailFont;
-        ctx.fillText("(envoyez moi une photo de votre écran comme preuve de votre victoire)", gCanvas.width/2, 2*gCanvas.height/3);
+        ctx.fillText("(envoyez moi une photo identifiable de votre", gCanvas.width/2, 2*gCanvas.height/3);
+        ctx.fillText("écran comme preuve de votre victoire)", gCanvas.width/2, 2*gCanvas.height/3+15);
         ctx.font = defaultFont;
     }
 }
@@ -174,6 +190,7 @@ function setObstacles(){
             newPattern = getRndPattern(4,7);
         }
     }
+
 
 
     /*
@@ -233,3 +250,5 @@ function setObstacles(){
     }
 }
 
+
+init();
