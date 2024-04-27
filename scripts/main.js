@@ -28,7 +28,7 @@ window.addEventListener("resize",init);
 
 
 const FPS = 60;
-const MAX_LEVEL = 9;
+var MAX_LEVEL = 9;
 const RACING_LANES_COUNT = 3;
 const RACING_ROWS_COUNT = 5;
 const TO_NEXT_LEVEL_INDICATOR_COUNT = ctx.canvas.width/20;
@@ -45,6 +45,7 @@ var newObstaclesCounter = null;
 var gameLost = null;
 var gameWon = null;
 
+var isPussy = false;
 
 function sizeCanvas(){
     ctx.canvas.height = window.innerHeight*0.90;
@@ -102,6 +103,11 @@ function draw(){
     var levelIndicator = "-".repeat(newObstaclesCounter*TO_NEXT_LEVEL_INDICATOR_COUNT/toNextLevel);
     ctx.strokeText(levelIndicator+level+levelIndicator, gCanvas.width/2, gCanvas.height/2);
 
+    if(isPussy){
+        gCanvas.style.border = "5px solid #FFC0CB";
+        playerAvatar.src = "./img/pussy.png";
+    }
+
     drawPlayer();
     drawObstacles();
     checkWinState();
@@ -134,9 +140,19 @@ function checkWinState(){
 
 
         ctx.drawImage(winAvatar, gCanvas.width/2-winAvatar.width/2+5, 10, winAvatar.width, winAvatar.height);
-        ctx.fillStyle = "green";
-        gCanvas.style.border = "1px solid #00FF00";
-        ctx.fillText("Congratulations!", gCanvas.width/2, gCanvas.height/2);
+        
+        ctx.fillStyle = isPussy ? "pink" : "green";
+        
+        if(isPussy){
+            ctx.fillStyle = "pink";
+            gCanvas.style.border = "20px solid #FFC0CB";
+            ctx.fillText("Hahaha... PUSSY :P!", gCanvas.width/2, gCanvas.height/2);
+        } else {
+            ctx.fillStyle = "green";
+            gCanvas.style.border = "1px solid #00FF00";
+            ctx.fillText("Congratulations", gCanvas.width/2, gCanvas.height/2);
+        }
+    
         ctx.font = detailFont;
         ctx.fillText("(envoyez moi une photo identifiable de votre", gCanvas.width/2, 2*gCanvas.height/3);
         ctx.fillText("écran comme preuve de votre victoire)", gCanvas.width/2, 2*gCanvas.height/3+15);
@@ -171,6 +187,7 @@ function getLane(xPos){
 function getRndPattern(min, max) {
     return Math.floor(Math.random() * (max - min) ) + min;
 }
+
 function setObstacles(){
     
     //Rotate rows
@@ -184,6 +201,10 @@ function setObstacles(){
             newPattern = getRndPattern(1,7);
         } else {
             newPattern = getRndPattern(4,7);
+        }
+
+        if (isPussy) {
+            newPattern = getRndPattern(1,4);
         }
     }
 
@@ -245,6 +266,24 @@ function setObstacles(){
         setObstaclesInterval=setInterval(setObstacles,1000/level);
     }
 }
+
+var cheatcode = "";
+const PUSSYMODE = "JESUISUNEPETITEBITCH";
+window.addEventListener("keydown", function (event) { 
+    if(cheatcode.length != PUSSYMODE.length) {
+        if(event.key == PUSSYMODE[cheatcode.length].toLowerCase()){
+            cheatcode += event.key;
+        } else {
+            cheatcode = "";
+        }
+    }
+
+    if(cheatcode == PUSSYMODE.toLowerCase()){
+        console.log("HAHAHA PUSSY");
+        isPussy = true;
+        MAX_LEVEL = 6;
+    }
+  }, true);
 
 
 init();
